@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="tg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14213d">
+<title>OLYMPIAD QR</title>
+<style>
+:root{--navy:#14213d;--blue:#2563eb;--bg:#f3f6fb;--line:#dbe2ee;--muted:#64748b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#172033}
+header{background:var(--navy);color:#fff;padding:22px 18px 18px}header h1{margin:0;font-size:23px;letter-spacing:.5px}header p{margin:6px 0 0;color:#cbd5e1;font-size:13px}
+main{max-width:760px;margin:0 auto;padding:14px}
+.tabs{display:flex;gap:8px;overflow:auto;margin:4px 0 14px}
+.tabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#334155;border-radius:12px;padding:11px 14px;font-weight:650}
+.tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.panel{display:none;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #0f172a08}
+.panel.active{display:block}h2{font-size:18px;margin:0 0 12px}p.help{color:var(--muted);font-size:13px;line-height:1.5;margin:6px 0 12px}
+button,.filebtn{border:0;border-radius:11px;padding:12px 15px;background:var(--blue);color:#fff;font-size:14px;font-weight:650;cursor:pointer;display:inline-block}
+button.secondary,.filebtn.secondary{background:#e8eef9;color:#1e3a8a}
+button.danger{background:#fee2e2;color:#991b1b}
+input[type=file]{display:none}input[type=text]{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:16px;margin:5px 0 10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.stat{background:#f1f5f9;border-radius:12px;padding:10px 13px;min-width:100px}.stat b{display:block;font-size:20px}.stat small{color:var(--muted)}
+#reader{width:100%;max-width:440px;margin:12px auto;border-radius:12px;overflow:hidden}
+.result{background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:16px;margin-top:12px}
+.result .name{font-size:23px;font-weight:750;margin-top:5px}.hidden{display:none}
+#labels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+.label{border:1px dashed #94a3b8;border-radius:8px;padding:9px;display:flex;gap:8px;align-items:center;break-inside:avoid;min-height:104px}
+.label canvas,.label img{width:82px!important;height:82px!important;flex:0 0 82px}.label strong{font-size:13px}.label small{display:block;color:#475569;font-size:11px;margin-top:4px}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+table{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+@media print{
+ body{background:#fff}header,.tabs,.noprint,.panel:not(#printPanel){display:none!important}
+ main{padding:0;max-width:none}#printPanel{display:block!important;border:0;box-shadow:none;padding:0}
+ #labels{grid-template-columns:repeat(2,1fr);gap:5mm}
+ .label{border:1px dashed #aaa;border-radius:0;min-height:30mm;padding:2mm}
+ .label canvas,.label img{width:24mm!important;height:24mm!important;flex-basis:24mm}
+ .label strong{font-size:9pt}.label small{font-size:7pt}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+<header><h1>OLYMPIAD QR</h1><p>Муайян кардани хонанда аз рӯйи рамзи махфӣ</p></header>
+<main>
+<div class="tabs noprint">
+<button class="active" data-tab="students">1. Хонандагон</button>
+<button data-tab="printPanel">2. Чопи QR</button>
+<button data-tab="scanPanel">3. Скан</button>
+<button data-tab="backupPanel">4. Нусха</button>
+</div>
+
+<section class="panel active noprint" id="students">
+<h2>Рӯйхати хонандагон</h2>
+<p class="help">Файли CSV-ро ворид кун. Сутунҳо: Ном ва Насаб. Метавонӣ рӯйхатро аз Excel ҳамчун CSV UTF-8 нигоҳ дорӣ.</p>
+<div class="row">
+<label class="filebtn" for="csvFile">Интихоби CSV</label><input id="csvFile" type="file" accept=".csv,text/csv">
+<button class="secondary" id="sampleBtn">Намунаи CSV</button>
+</div>
+<p class="note">Намуна: Ном;Насаб<br>Али;Каримов<br>Фирдавс;Саидов</p>
+<div class="stats"><div class="stat"><b id="count">0</b><small>Хонанда</small></div><div class="stat"><b id="coded">0</b><small>Рамзи махфӣ</small></div></div>
+<div class="row">
+<button id="generateBtn">Сохтани рамзҳо</button>
+<button class="danger" id="clearBtn">Тоза кардани рӯйхат</button>
+</div>
+<p class="note">Ҳангоми сохтани рамзҳо барои ҳар хонанда як ID-и тасодуфӣ сохта мешавад. Ном дар дохили QR-код сабт намешавад.</p>
+<div id="studentPreview"></div>
+</section>
+
+<section class="panel" id="printPanel">
+<h2>Чопи 2 нусхаи ҳар QR-код</h2>
+<p class="help">Ҳар рамз ду маротиба чоп мешавад: як нусха ба варақаи имтиҳон ва нусхаи дуюм ба рӯйхати махфии номҳо. Ҳар ду рамз якхелаанд.</p>
+<div class="row noprint">
+<button id="makeLabels">Омода кардани QR-кодҳо</button>
+<button class="secondary" onclick="window.print()">Чоп кардан / Save as PDF</button>
+</div>
+<p class="note noprint" id="printStatus">Аввал рӯйхати хонандагонро ворид ва рамзҳоро соз.</p>
+<div id="labels"></div>
+</section>
+
+<section class="panel noprint" id="scanPanel">
+<h2>Скан кардани варақаи имтиҳон</h2>
+<p class="help">Камераро ба QR-коди варақа равона кун. Барнома рамзи махфиро мехонад ва номи мувофиқро нишон медиҳад.</p>
+<div class="row"><button id="startScan">Оғози скан</button><button class="secondary" id="stopScan">Қатъи камера</button></div>
+<div id="reader"></div>
+<div class="result hidden" id="scanResult"><small>Натиҷаи ҷустуҷӯ</small><div class="name" id="studentName"></div><div id="studentCode"></div></div>
+<p class="note">Агар камера боз нашавад, ин саҳифаро аз HTTPS кушо ва иҷозати истифодаи камераро дар Safari интихоб кун.</p>
+</section>
+
+<section class="panel noprint" id="backupPanel">
+<h2>Нусхаи эҳтиётӣ</h2>
+<p class="help">Ин файл рӯйхати номҳо ва рамзҳои махфиро дар бар мегирад. Онро танҳо ташкилкунанда нигоҳ дорад. Ба доварон надиҳ.</p>
+<div class="row"><button id="exportBtn">Зеркашии рӯйхат (CSV)</button><label class="filebtn secondary" for="backupFile">Барқарор аз CSV</label><input id="backupFile" type="file" accept=".csv,text/csv"></div>
+<p class="note">Маълумот дар браузери ҳамин телефон/компютер нигоҳ дошта мешавад. Пеш аз пок кардани маълумоти Safari ҳатман нусха гир.</p>
+</section>
+</main>
+<script>
+const KEY='olympiad_qr_students_v1';
+let students=[];
+try{students=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){students=[]}
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(KEY,JSON.stringify(students));renderStats()}
+function renderStats(){
+ $('count').textContent=students.length;
+ $('coded').textContent=students.filter(x=>x.code).length;
+ $('studentPreview').innerHTML=students.length?`<p class="note">Намунаи рӯйхат (то 5 нафар):</p><table><tr><th>Ном</th><th>Насаб</th><th>Рамз</th></tr>${students.slice(0,5).map(s=>`<tr><td>${esc(s.first)}</td><td>${esc(s.last)}</td><td>${s.code||'—'}</td></tr>`).join('')}</table>`:'';
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function parseCSV(text){
+ let lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim());
+ if(!lines.length)return [];
+ let delim=(lines[0].includes(';')?';':',');
+ let rows=lines.map(line=>{let out=[],cur='',q=false;for(let i=0;i<line.length;i++){let c=line[i];if(c==='"'&&line[i+1]==='"'&&q){cur+='"';i++}else if(c==='"')q=!q;else if(c===delim&&!q){out.push(cur.trim());cur=''}else cur+=c}out.push(cur.trim());return out});
+ let start=/ном|name|first/i.test(rows[0][0]||'')?1:0;
+ return rows.slice(start).filter(r=>r[0]&&r[1]).map(r=>({first:r[0],last:r[1],code:''}));
+}
+function newCode(used){let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',c;do{let a=new Uint8Array(8);crypto.getRandomValues(a);c='';for(let x of a)c+=chars[x%chars.length]}while(used.has(c));used.add(c);return c}
+$('csvFile').addEventListener('change',async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{let imported=parseCSV(await f.text());if(!imported.length)throw Error('Дар файл сатри дурусти Ном ва Насаб ёфт нашуд.');
+ students=imported;save();alert('Ворид шуд: '+students.length+' хонанда. Акнун «Сохтани рамзҳо»-ро пахш кун.')}
+ catch(err){alert(err.message)}e.target.value='';
+});
+$('sampleBtn').onclick=()=>{let blob=new Blob(['Ном;Насаб\nАли;Каримов\nФирдавс;Саидов\nМаҳмуд;Раҳимов'],{type:'text/csv;charset=utf-8'});download(blob,'namuna_honandagon.csv')};
+$('generateBtn').onclick=()=>{
+ if(!students.length){alert('Аввал CSV ворид кун.');return}
+ if(!confirm('Барои '+students.length+' хонанда рамзҳои нав сохта шаванд? Рамзҳои кӯҳна иваз мешаванд.'))return;
+ let used=new Set();students.forEach(s=>s.code=newCode(used));save();alert('Рамзҳо сохта шуданд. Акнун ба қисми «Чопи QR» гузар.');
+};
+$('clearBtn').onclick=()=>{if(confirm('Ҳамаи маълумот тоза шавад? Аввал нусхаи эҳтиётӣ гир.')){students=[];save();$('labels').innerHTML=''}};
+$('makeLabels').onclick=()=>{
+ if(!students.length||students.some(s=>!s.code)){alert('Аввал рӯйхатро ворид карда, рамзҳоро соз.');return}
+ const root=$('labels');root.innerHTML='';
+ students.forEach(s=>{for(let copy=1;copy<=2;copy++){
+  let el=document.createElement('div');el.className='label';
+  let qr=document.createElement('div');el.appendChild(qr);
+  let info=document.createElement('div');info.innerHTML=`<strong>Рамзи махфӣ</strong><small>${s.code}</small><small>Нусхаи ${copy}</small>`;el.appendChild(info);root.appendChild(el);
+  new QRCode(qr,{text:s.code,width:164,height:164,correctLevel:QRCode.CorrectLevel.M});
+ }});
+ $('printStatus').textContent='Тайёр: '+(students.length*2)+' стикер барои '+students.length+' хонанда.';
+};
+let scanner=null;
+$('startScan').onclick=async()=>{
+ if(!students.length){alert('Аввал рӯйхати хонандагон ва рамзҳоро ворид кун.');return}
+ if(!window.Html5Qrcode){alert('Китобхонаи сканер бор нашуд. Интернетро санҷ ва саҳифаро аз нав кушо.');return}
+ try{
+  if(!scanner)scanner=new Html5Qrcode('reader');
+  await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},decoded=>{
+   let found=students.find(s=>s.code===decoded.trim());
+   $('scanResult').classList.remove('hidden');
+   $('studentName').textContent=found?found.first+' '+found.last:'Рамз ёфт нашуд';
+   $('studentCode').textContent='Рамз: '+decoded+(found?'':' — дар рӯйхат нест');
+  });
+ }catch(e){alert('Камера кушода нашуд. Саҳифаро бо HTTPS кушо ва иҷозати камераро фаъол кун.\n'+e)}
+};
+$('stopScan').onclick=async()=>{if(scanner&&scanner.isScanning){await scanner.stop();}};
+$('exportBtn').onclick=()=>{
+ if(!students.length){alert('Рӯйхат холӣ аст.');return}
+ let csv='Ном;Насаб;Рамзи махфӣ\n'+students.map(s=>[s.first,s.last,s.code||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
+ download(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}),'qr_rohyhat_maфи.csv');
+};
+$('backupFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let rows=parseBackup(await f.text());if(!rows.length)throw Error('Файл нодуруст аст');students=rows;save();alert('Барқарор шуд: '+students.length+' хонанда')}catch(err){alert(err.message)}e.target.value=''};
+function parseBackup(text){
+ let lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim());let d=lines[0].includes(';')?';':',';
+ return lines.slice(1).map(line=>{let a=line.split(d).map(x=>x.replace(/^"|"$/g,'').replace(/""/g,'"'));return {first:a[0],last:a[1],code:a[2]}}).filter(x=>x.first&&x.last&&x.code);
+}
+function download(blob,name){let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));
+});
+renderStats();
+</script>
+</body></html>
